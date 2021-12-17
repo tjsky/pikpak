@@ -28,9 +28,9 @@
           <n-form-item path="password1">
             <n-input  :disabled="!loginData.password" v-model:value="loginData.password1" placeholder="请再次输入密码" @keyup.enter="register" type="password" show-password-on="mousedown"></n-input>
           </n-form-item>
-          <n-form-item label="">
+          <!-- <n-form-item label="">
             <n-checkbox v-model:checked="invite">接受邀请获得10天vip</n-checkbox>
-          </n-form-item>
+          </n-form-item> -->
           <n-form-item>
             <n-button type="primary" class="block" :loading="loading" @click="register">注册</n-button>
           </n-form-item>
@@ -209,9 +209,9 @@ const register = (e:Event) => {
                 verification_token: res.data.verification_token
               })
                 .then((res:any) => {
-                  if(invite.value) {
-                    vipInvite(res.data)
-                  }
+                  // if(invite.value) {
+                  vipInvite(res.data)
+                  // }
                   window.localStorage.setItem('pikpakLogin', JSON.stringify(res.data))
                   window.localStorage.removeItem('pikpakLoginData')
                   message.success('注册成功')
