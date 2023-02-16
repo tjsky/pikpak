@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosInstance } from 'axios'
 import router from '../router/index'
 
 const instance = axios.create({})
@@ -90,6 +90,23 @@ instance2.interceptors.request.use(request => {
   }
   return request
 })
+
+export async function asyncPool (poolLimit:number, array:any, iteratorFn:Function) {
+  const ret:any = []
+  const executing:any = []
+  for (const item of array) {
+    const p = Promise.resolve().then(() => iteratorFn(item))
+    ret.push(p)
+    if (poolLimit <= array.length) {
+      const e:any = p.then(() => executing.splice(executing.indexOf(e), 1))
+      executing.push(e)
+      if (executing.length >= poolLimit) {
+        await Promise.race(executing)
+      }
+    }
+  }
+  return Promise.all(ret)
+}
 
 export const notionHttp = instance2
 export default instance
