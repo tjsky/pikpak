@@ -239,7 +239,7 @@
 <script setup lang="ts">
 import { ref } from '@vue/reactivity';
 import { h, computed, onMounted, watch, nextTick } from '@vue/runtime-core'
-import http, { notionHttp } from '../utils/axios'
+import http, { notionHttp, asyncPool } from '../utils/axios'
 import { useRoute, useRouter } from 'vue-router'
 import { DataTableColumns, NDataTable, NTime, NEllipsis, NModal, NCard, NInput, NBreadcrumb, NBreadcrumbItem, NIcon, useThemeVars, NButton, NTooltip, NSpace, NScrollbar, NSpin, NDropdown, useDialog, NAlert, useNotification, NotificationReactive, NSelect, NForm, NFormItem, NTag, NText, NInputGroup } from 'naive-ui'
 import { CirclePlus, CircleX, Dots, Share, Copy as IconCopy, SwitchHorizontal, LetterA, ZoomQuestion } from '@vicons/tabler'
@@ -249,7 +249,7 @@ import TaskVue from '../components/Task.vue'
 import ClipboardJS from 'clipboard'
 import streamSaver from 'streamsaver'
 import { DropdownMixedOption } from 'naive-ui/lib/dropdown/src/interface'
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
   const filesList = ref()
   const route = useRoute()
   const router = useRouter()
@@ -371,6 +371,12 @@ import axios from 'axios';
           }, {
             default: () => '下载'
           }),
+          !samllPage.value && row.kind === 'drive#file' && h(NText, {
+            type: 'primary',
+            onClick: () => aria2Buff(row.id)
+          }, {
+            default: () => 'Aria2-Buff'
+          }),
           !samllPage.value && h(NText, {
             type: 'primary',
             onClick: () => {
@@ -414,6 +420,12 @@ import axios from 'axios';
                   break
                 case 'aria2Post':
                   getFile(row.id)
+                    .then((res:any) => {
+                      aria2Post(res)
+                    })
+                  break
+                 case 'aria2PostBuff':
+                  getFileMultiTimes(row.id, aria2Data.value.batchUrlNum)
                     .then((res:any) => {
                       aria2Post(res)
                     })
@@ -582,6 +594,15 @@ import axios from 'axios';
         return res
       })
   }
+  
+   const getFileMultiTimes = (id:string, times:number) => {
+    const list:Array<string> = []
+    for (let i = 0; i < times; i++) {
+      list.push(id)
+    }
+    return asyncPool(aria2Data.value.batchUrlConcurrence, list, getFile)
+  }
+  
   const showVideo = ref(false)
   const showImage = ref(false)
   const showAddUrl = ref(false)
@@ -786,6 +807,14 @@ import axios from 'axios';
     }
     postOne()
   }
+  
+    const aria2Buff = (id:string) => {
+    getFileMultiTimes(id, aria2Data.value.batchUrlNum)
+      .then((res:any) => {
+        aria2Post(res)
+      })
+  }
+  
   const downFile = (id:string) => {
     getFile(id)
       .then((info:any) => {
@@ -846,7 +875,20 @@ import axios from 'axios';
       })
   }
   const aria2Post = (res:any, dir?:string) => {
-    let url = res.data.web_content_link
+    let urls:Array<string> = []
+    let filename: string
+    if (Array.isArray(res)) {
+      filename = res[0].data.name
+      for (const item of res) {
+        urls.push(item.data.web_content_link)
+      }
+    } else {
+      urls.push(res.data.web_content_link)
+      filename = res.data.name
+    }
+    if (aria2Data.value.serverNumber) {
+      urls = urls.map(url => url.replace(/\d+(\.mypikpak\.com)/, aria2Data.value.serverNumber + '$1'))
+    }
 //    if(res.data.medias && res.data.medias.length) {
 //      url = res.data.medias[0]?.link?.url || url
 //    }
@@ -855,9 +897,9 @@ import axios from 'axios';
         jsonrpc:'2.0',
         method:'aria2.addUri',
         params:[
-            [url],
+            urls,
             {
-              out: res.data.name
+              out: filename
             }
         ]
     }
@@ -1078,6 +1120,11 @@ import axios from 'axios';
       {
         label: '推送到Aria2',
         key: 'aria2Post',
+        disabled: row.size <= 0 || !aria2Data.value || !aria2Data.value.host
+      },
+      {
+        label: '推送到Aria2-BUFF',
+        key: 'aria2PostBuff',
         disabled: row.size <= 0 || !aria2Data.value || !aria2Data.value.host
       },
       {
