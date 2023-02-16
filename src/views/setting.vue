@@ -19,6 +19,15 @@
           <n-form-item label="aria2Token：">
             <n-input v-model:value="aria2Data.token" type="password" show-password-on="mousedown"></n-input>
           </n-form-item>
+          <n-form-item label="下载服务器序号：">
+            <n-input v-model:value="aria2Data.serverNumber" placeholder="替换下载链接里的服务器序号"></n-input>
+          </n-form-item>
+          <n-form-item label="单个文件链接数量：">
+            <n-input-number v-model:value="aria2Data.batchUrlNum" placeholder="需要推送多少个链接并发下载"></n-input-number>
+          </n-form-item>
+          <n-form-item label="获取链接并发：">
+            <n-input-number v-model:value="aria2Data.batchUrlConcurrence" placeholder="提取多个下载链接时的并发数"></n-input-number>
+          </n-form-item>
           <n-form-item label="文件夹设置：">
             <n-switch v-model:value="aria2Data.dir" >
               <template #checked>选择文件夹时保存文件夹结构</template>
@@ -90,7 +99,7 @@
 import { ref } from '@vue/reactivity';
 import { onMounted } from '@vue/runtime-core';
 import http from '../utils/axios'
-import { NForm, NFormItem, NButton, NInput, NCollapse, NCollapseItem, NSpace, NSwitch, useDialog, NAlert, NLog, NIcon } from 'naive-ui'
+import { NForm, NFormItem, NButton, NInput, NInputNumber, NCollapse, NCollapseItem, NSpace, NSwitch, useDialog, NAlert, NLog, NIcon } from 'naive-ui'
 import { ZoomQuestion } from '@vicons/tabler'
 import {proxy as proxyDefault} from '../config'
 const logs = ref([
@@ -107,7 +116,10 @@ const logs = ref([
 const aria2Data = ref({
   host: '',
   token: '',
-  dir: true
+  dir: true,
+  serverNumber: '',
+  batchUrlNum: 1,
+  batchUrlConcurrence: 1,
 })
 const testAria2 = () => {
   let postData:any = {
