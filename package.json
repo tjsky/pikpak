@@ -12,7 +12,7 @@
     "dplayer": "^1.26.0",
     "element-resize-detector": "^1.2.3",
     "plyr": "^3.6.9",
-    "qs": "^6.10.1",
+    "qs": "^6.10.3",
     "streamsaver": "^2.0.5",
     "vue": "^3.2.16",
     "vue-gtag": "^2.0.1",
