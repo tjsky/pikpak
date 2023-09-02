@@ -17,7 +17,7 @@
       </a>
       <n-menu :options="menuOptions" :value="String(route.name)" @update:value="goRoute"></n-menu>
       <div class="content-bottom" v-if="!collapsed">
-        {{byteConvert(aboutInfo?.quota.usage)}} / {{byteConvert(aboutInfo?.quota.limit)}} <n-text type="primary" @click="showCode = true">会员码</n-text>
+        {{byteConvert(aboutInfo?.quota.usage)}} / {{byteConvert(aboutInfo?.quota.limit)}} <n-text type="primary" @click="showCode = true">会员码</n-text>|<n-text type="primary" @click="showlog = true">传输配额</n-text>
         <n-progress 
           v-if="aboutInfo?.quota"
           type="line"
@@ -77,6 +77,17 @@
       <n-input placeholder="会员码" v-model:value="code"></n-input>
       <template #action>
         <n-button :block="true" type="primary" :disabled="!code" @click="postCode">添加</n-button>
+      </template>
+    </n-card>
+  </n-modal>
+    <n-modal v-model:show="showlog">
+    <n-card style="width: 650px;" title="传输配额">
+      <template #header-extra>
+        <n-icon @click="showCode = false">
+          <circle-x></circle-x>
+        </n-icon>
+      </template>
+       <iframe src="https://mypikpak.com/drive/all?action=show_traffic_dialog" frameborder="0"</iframe>
       </template>
     </n-card>
   </n-modal>
